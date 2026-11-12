@@ -60,6 +60,7 @@ Use `bun`.
 cd web
 bun install
 bun run dev      # local dev server
+bun run lint     # Biome lint
 bun run build    # type-check and build
 
 cd ..
@@ -67,6 +68,16 @@ bun test supabase/functions/api            # seating tests
 API_URL=https://<project-ref>.supabase.co/functions/v1/api \
   EVENT_CODE=demo HOST_PIN=<pin> GUESTS=35 bun scripts/simulate.ts
 ```
+
+## CI
+
+`.github/workflows/ci.yml` runs on every pull request and on `main`:
+
+- **Web app**: `bun run lint` (Biome, rules in `web/biome.json`), `bun run typecheck` and `bun run build`.
+- **Seating tests**: `bun test supabase/functions/api`.
+- **Backend function**: `deno lint supabase/functions scripts` and `deno check supabase/functions/api/index.ts`.
+
+CodeQL runs separately from `codeql.yml`. CI never talks to Supabase, so it does not touch any event.
 
 `web/.env` holds only public values (project URL, publishable key, default event code). Never put a service role key or a host PIN in this repo.
 

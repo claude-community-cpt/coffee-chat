@@ -1,7 +1,7 @@
 // Table Mixer API. One Edge Function, one POST endpoint, an "action" per call.
 // Guests are identified by a random token, hosts by the event PIN. Browsers
 // never read or write the database directly.
-import "jsr:@supabase/functions-js/edge-runtime.d.ts";
+import "jsr:@supabase/functions-js@2/edge-runtime.d.ts";
 import { createClient, type SupabaseClient } from "npm:@supabase/supabase-js@2.45.4";
 import { assignRound, type GuestSeatHistory, metPairs, seatLatecomer } from "./assign.ts";
 
