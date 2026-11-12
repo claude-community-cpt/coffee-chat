@@ -2,6 +2,7 @@ import { useMemo, useState } from "react";
 import { api, ApiError, eventCode, type EventInfo } from "./api";
 import { clock, useCountdown, useLive } from "./useLive";
 import { joinUrl, PollBars, RoomGrid, type RoomTable } from "./Screen";
+import { Brand } from "./Brand";
 
 type TableSetup = { number: number; topic: string; starter: string; open: boolean };
 type PollSetup = { question: string; options: string[]; allowText: boolean };
@@ -60,6 +61,7 @@ export function Host() {
     return (
       <main className="host narrow">
         <form className="stack" onSubmit={login}>
+          <Brand />
           <h1>Host sign-in</h1>
           <p className="sub">Event: {code}</p>
           <label className="label" htmlFor="pin">Host PIN</label>
@@ -119,6 +121,7 @@ function Dashboard({ code, pin, view, setView, stale, signOut }: {
     <main className="host">
       <header className="row between">
         <div>
+          <Brand />
           <h1>{event.name}</h1>
           <p className="sub">Host page · guests join at {joinUrl(code).replace(/^https?:\/\//, "")} · <a href={`/screen${location.search}`} target="_blank" rel="noreferrer">open the big screen</a></p>
         </div>

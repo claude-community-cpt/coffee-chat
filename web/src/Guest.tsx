@@ -1,6 +1,7 @@
 import { useEffect, useMemo, useState } from "react";
 import { api, ApiError, eventCode, store, tableColor, type EventInfo } from "./api";
 import { clock, useCountdown, useLive } from "./useLive";
+import { Brand } from "./Brand";
 
 type GuestView = {
   event: EventInfo;
@@ -45,6 +46,7 @@ export function Guest() {
 
   return (
     <main className="guest">
+      <Brand />
       {!token ? (
         <Join code={code} onJoined={(t) => { store(tokenKey, t); setToken(t); }} />
       ) : !live.data ? (
@@ -82,7 +84,7 @@ function Join({ code, onJoined }: { code: string; onJoined: (token: string) => v
   }
   return (
     <form onSubmit={submit} className="stack">
-      <h1>Welcome to the Claude coffee morning</h1>
+      <h1>Welcome to the coffee morning</h1>
       <p className="sub">Pop in your first name and we'll give you a table.</p>
       <label className="label" htmlFor="name">First name</label>
       <input id="name" value={name} onChange={(e) => setName(e.target.value)} maxLength={20} autoComplete="given-name" autoFocus />

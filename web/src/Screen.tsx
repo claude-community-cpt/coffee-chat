@@ -2,6 +2,7 @@ import { useEffect, useMemo, useState } from "react";
 import QRCode from "qrcode";
 import { api, eventCode, tableColor, type EventInfo } from "./api";
 import { clock, useCountdown, useLive } from "./useLive";
+import { Brand } from "./Brand";
 
 export type RoomTable = { number: number; topic: string; starter: string; guests: string[] };
 type RoomView = {
@@ -72,7 +73,7 @@ export function Screen() {
   return (
     <main className="screen">
       <header className="row between">
-        <h1>{event.name}</h1>
+        <div className="stack tight"><Brand /><h1>{event.name}</h1></div>
         <div className="row">
           {event.phase === "round" && <span className="label">Round {event.round} of {event.totalRounds}</span>}
           {event.phase === "round" && left != null && <span className={"timer huge" + (left === 0 ? " done" : "")}>{clock(left)}</span>}
