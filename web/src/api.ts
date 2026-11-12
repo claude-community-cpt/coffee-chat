@@ -11,7 +11,7 @@ export class ApiError extends Error {
   }
 }
 
-export async function api<T = any>(action: string, body: Record<string, unknown> = {}): Promise<T> {
+export async function api<T = unknown>(action: string, body: Record<string, unknown> = {}): Promise<T> {
   let res: Response;
   try {
     res = await fetch(`${URL_BASE}/functions/v1/api`, {

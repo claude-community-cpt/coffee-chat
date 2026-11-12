@@ -38,6 +38,7 @@ export function useLive<T>(code: string, load: (() => Promise<T>) | null, deps: 
     }
   }, []);
 
+  // biome-ignore lint/correctness/useExhaustiveDependencies: load is a new function every render, so the effect keys on whether it exists plus the caller's deps
   useEffect(() => {
     if (!load) {
       setData(null);
@@ -57,7 +58,6 @@ export function useLive<T>(code: string, load: (() => Promise<T>) | null, deps: 
       document.removeEventListener("visibilitychange", onVisible);
       window.removeEventListener("online", refresh);
     };
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [code, !!load, refresh, ...deps]);
 
   return { data, setData, error, stale, refresh };

@@ -89,7 +89,7 @@ function Join({ code, onJoined }: { code: string; onJoined: (token: string) => v
       <label className="label" htmlFor="name">First name</label>
       <input id="name" value={name} onChange={(e) => setName(e.target.value)} maxLength={20} autoComplete="given-name" autoFocus />
       {error && <p className="error" role="alert">{error}</p>}
-      <button className="primary big" disabled={busy}>{busy ? "Joining..." : "Get my table"}</button>
+      <button type="submit" className="primary big" disabled={busy}>{busy ? "Joining..." : "Get my table"}</button>
       <p className="fine">Your first name is shown to other guests and on the big screen, and deleted after the event.</p>
     </form>
   );
@@ -99,7 +99,7 @@ function Joined({ view, token, refresh }: { view: GuestView; token: string; refr
   const { event, me, table, mates, poll } = view;
   const left = useCountdown(event.roundEndsAt, event.serverNow);
   const steps = (
-    <div className="steps" aria-label={`Round ${event.round} of ${event.totalRounds}`}>
+    <div className="steps" role="img" aria-label={`Round ${event.round} of ${event.totalRounds}`}>
       {Array.from({ length: event.totalRounds }, (_, i) => <i key={i} className={event.round > i ? "on" : ""} />)}
     </div>
   );
@@ -174,7 +174,7 @@ function Poll({ poll, token, refresh }: { poll: NonNullable<GuestView["poll"]>; 
           const pct = answered && total ? Math.round(((poll.counts?.[i] ?? 0) * 100) / total) : 0;
           const mine = poll.myAnswer?.optionIndex === i;
           return (
-            <button key={i} className={"opt" + (mine ? " mine" : "")} disabled={busy || answered} onClick={() => send({ optionIndex: i })}>
+            <button type="button" key={i} className={"opt" + (mine ? " mine" : "")} disabled={busy || answered} onClick={() => send({ optionIndex: i })}>
               {answered && <i className="bar" style={{ width: pct + "%" }} />}
               <span>{o}</span>
               {answered && <span className="pct">{pct}%</span>}
@@ -187,7 +187,7 @@ function Poll({ poll, token, refresh }: { poll: NonNullable<GuestView["poll"]>; 
           <label className="label" htmlFor="own">Or type your own answer</label>
           <div className="row">
             <input id="own" value={text} onChange={(e) => setText(e.target.value)} maxLength={140} />
-            <button disabled={busy || !text.trim()}>Send</button>
+            <button type="submit" disabled={busy || !text.trim()}>Send</button>
           </div>
         </form>
       )}

@@ -67,7 +67,7 @@ export function Host() {
           <label className="label" htmlFor="pin">Host PIN</label>
           <input id="pin" inputMode="numeric" autoComplete="off" value={entry} onChange={(e) => setEntry(e.target.value)} autoFocus />
           {(loginError || live.error) && <p className="error" role="alert">{loginError || live.error?.message}</p>}
-          <button className="primary big" disabled={busy || !entry}>Sign in</button>
+          <button type="submit" className="primary big" disabled={busy || !entry}>Sign in</button>
         </form>
       </main>
     );
@@ -90,7 +90,7 @@ function Dashboard({ code, pin, view, setView, stale, signOut }: {
     setError("");
     try {
       const next = await api<HostView>("host." + action, { code, pin, ...body });
-      if ((next as any).event) setView(next);
+      if (next.event) setView(next);
       return true;
     } catch (err) {
       setError(err instanceof ApiError ? err.message : "Something went wrong.");
@@ -126,7 +126,7 @@ function Dashboard({ code, pin, view, setView, stale, signOut }: {
           <h1>{event.name}</h1>
           <p className="sub">Host page · guests join at {joinUrl(code).replace(/^https?:\/\//, "")} · <a href={`/screen${location.search}`} target="_blank" rel="noreferrer">open the big screen</a></p>
         </div>
-        <button onClick={signOut}>Sign out</button>
+        <button type="button" onClick={signOut}>Sign out</button>
       </header>
       {stale && <p className="banner" role="status">Reconnecting...</p>}
       {error && <p className="error" role="alert">{error}</p>}
@@ -143,13 +143,13 @@ function Dashboard({ code, pin, view, setView, stale, signOut }: {
           {next && (
             <div className="advance">
               {!confirming ? (
-                <button className="primary big" disabled={busy} onClick={() => setConfirming(true)}>{next}</button>
+                <button type="button" className="primary big" disabled={busy} onClick={() => setConfirming(true)}>{next}</button>
               ) : (
                 <>
-                  <button className="primary big" disabled={busy} onClick={async () => { await act("advance", { fromPhase: event.phase, fromRound: event.round }); setConfirming(false); }}>
+                  <button type="button" className="primary big" disabled={busy} onClick={async () => { await act("advance", { fromPhase: event.phase, fromRound: event.round }); setConfirming(false); }}>
                     Yes, {next.charAt(0).toLowerCase() + next.slice(1)}
                   </button>
-                  <button className="big" disabled={busy} onClick={() => setConfirming(false)}>Cancel</button>
+                  <button type="button" className="big" disabled={busy} onClick={() => setConfirming(false)}>Cancel</button>
                 </>
               )}
             </div>
@@ -174,7 +174,7 @@ function Dashboard({ code, pin, view, setView, stale, signOut }: {
                 {view.poll.texts.map((t) => (
                   <li key={t.id} className="answer">
                     <span>{t.text}</span>
-                    <button disabled={busy} onClick={() => act("approveAnswer", { answerId: t.id, approved: !t.approved })}>
+                    <button type="button" disabled={busy} onClick={() => act("approveAnswer", { answerId: t.id, approved: !t.approved })}>
                       {t.approved ? "Hide" : "Show on screen"}
                     </button>
                   </li>
@@ -214,7 +214,7 @@ function Guests({ view, busy, act }: { view: HostView; busy: boolean; act: Act }
       <summary><h2>Guests ({view.guests.filter((g) => !g.left).length})</h2></summary>
       <form className="row" onSubmit={async (e) => { e.preventDefault(); if (name.trim() && (await act("addGuest", { name }))) setName(""); }}>
         <input aria-label="Add a guest by first name" placeholder="Add a guest by first name" value={name} maxLength={20} onChange={(e) => setName(e.target.value)} />
-        <button disabled={busy || !name.trim()}>Add</button>
+        <button type="submit" disabled={busy || !name.trim()}>Add</button>
       </form>
       {view.guests.length > 8 && (
         <input type="search" aria-label="Find a guest" placeholder="Find a guest" value={find} onChange={(e) => setFind(e.target.value)} />
@@ -225,7 +225,7 @@ function Guests({ view, busy, act }: { view: HostView; busy: boolean; act: Act }
           const isOpen = openId === g.id;
           return (
             <li key={g.id} className={g.left ? "gone" : ""}>
-              <button className="guestrow" aria-expanded={isOpen} onClick={() => setOpenId(isOpen ? null : g.id)}>
+              <button type="button" className="guestrow" aria-expanded={isOpen} onClick={() => setOpenId(isOpen ? null : g.id)}>
                 <span>
                   <strong>{g.name}</strong>
                   {g.table != null && !g.left && <span className="sub"> · table {g.table}</span>}
@@ -254,12 +254,12 @@ function Guests({ view, busy, act }: { view: HostView; busy: boolean; act: Act }
                       {g.pinnedTable != null && <option value="unpin">Stop keeping at one table</option>}
                     </select>
                   )}
-                  <button disabled={busy} onClick={() => act("markLeft", { guestId: g.id, left: !g.left })}>{g.left ? "Bring back" : "Mark as gone"}</button>
-                  <button
+                  <button type="button" disabled={busy} onClick={() => act("markLeft", { guestId: g.id, left: !g.left })}>{g.left ? "Bring back" : "Mark as gone"}</button>
+                  <button type="button"
                     disabled={busy}
                     onClick={() => {
                       const n = window.prompt?.(`New name for ${g.name}`, g.name);
-                      if (n && n.trim() && n !== g.name) act("renameGuest", { guestId: g.id, name: n });
+                      if (n?.trim() && n !== g.name) act("renameGuest", { guestId: g.id, name: n });
                     }}
                   >
                     Rename
@@ -331,7 +331,7 @@ function Setup({ view, busy, act, startOpen }: { view: HostView; busy: boolean; 
       <button type="button" disabled={polls.length >= 8} onClick={() => setPolls([...polls, { question: "", options: [], allowText: true }])}>Add a poll</button>
 
       <div className="row">
-        <button
+        <button type="button"
           className="primary"
           disabled={busy}
           onClick={async () => {
@@ -361,12 +361,12 @@ function Danger({ busy, act }: { busy: boolean; act: Act }) {
       <p className="sub">Wiping deletes every guest name, seat and poll answer and returns the event to "doors open". Tables, topics and polls are kept.</p>
       <div className="row">
         <input aria-label="Type WIPE to confirm" placeholder="Type WIPE to confirm" value={word} onChange={(e) => setWord(e.target.value)} />
-        <button className="danger" disabled={busy || word !== "WIPE"} onClick={async () => { if (await act("wipe", { confirm: "WIPE" })) { setWord(""); setMsg("Guest data wiped."); } }}>Wipe guest data</button>
+        <button type="button" className="danger" disabled={busy || word !== "WIPE"} onClick={async () => { if (await act("wipe", { confirm: "WIPE" })) { setWord(""); setMsg("Guest data wiped."); } }}>Wipe guest data</button>
       </div>
       <h3>Change the host PIN</h3>
       <div className="row">
         <input aria-label="New PIN, 6 to 12 digits" placeholder="New PIN, 6 to 12 digits" inputMode="numeric" value={newPin} onChange={(e) => setNewPin(e.target.value)} />
-        <button disabled={busy || !/^[0-9]{6,12}$/.test(newPin)} onClick={async () => { if (await act("changePin", { newPin })) { setMsg("PIN changed. Sign in again with the new one."); setNewPin(""); } }}>Change PIN</button>
+        <button type="button" disabled={busy || !/^[0-9]{6,12}$/.test(newPin)} onClick={async () => { if (await act("changePin", { newPin })) { setMsg("PIN changed. Sign in again with the new one."); setNewPin(""); } }}>Change PIN</button>
       </div>
       {msg && <p className="sub" role="status">{msg}</p>}
     </details>
