@@ -116,9 +116,10 @@ function Dashboard({ code, pin, view, setView, stale, signOut }: {
     : "Finished";
   const perTable = openTables.length ? active.length / openTables.length : 0;
   const warnRounds = event.totalRounds > openTables.length;
+  const wide = useMemo(() => window.matchMedia("(min-width: 700px)").matches, []);
 
   return (
-    <main className="host">
+    <main className={"host" + (next ? " hasbar" : "")}>
       <header className="row between">
         <div>
           <Brand />
@@ -139,13 +140,18 @@ function Dashboard({ code, pin, view, setView, stale, signOut }: {
               {perTable ? ` · about ${perTable.toFixed(1)} per table` : ""} · {view.repeatPairs} pairs have met twice
             </p>
           </div>
-          {next && !confirming && <button className="primary big" disabled={busy} onClick={() => setConfirming(true)}>{next}</button>}
-          {next && confirming && (
-            <div className="row">
-              <button className="primary big" disabled={busy} onClick={async () => { await act("advance", { fromPhase: event.phase, fromRound: event.round }); setConfirming(false); }}>
-                Yes, {next.charAt(0).toLowerCase() + next.slice(1)}
-              </button>
-              <button disabled={busy} onClick={() => setConfirming(false)}>Cancel</button>
+          {next && (
+            <div className="advance">
+              {!confirming ? (
+                <button className="primary big" disabled={busy} onClick={() => setConfirming(true)}>{next}</button>
+              ) : (
+                <>
+                  <button className="primary big" disabled={busy} onClick={async () => { await act("advance", { fromPhase: event.phase, fromRound: event.round }); setConfirming(false); }}>
+                    Yes, {next.charAt(0).toLowerCase() + next.slice(1)}
+                  </button>
+                  <button className="big" disabled={busy} onClick={() => setConfirming(false)}>Cancel</button>
+                </>
+              )}
             </div>
           )}
         </div>
@@ -166,7 +172,7 @@ function Dashboard({ code, pin, view, setView, stale, signOut }: {
               <span className="label">Typed answers. Only approved ones show on the big screen.</span>
               <ul className="list">
                 {view.poll.texts.map((t) => (
-                  <li key={t.id} className="row between">
+                  <li key={t.id} className="answer">
                     <span>{t.text}</span>
                     <button disabled={busy} onClick={() => act("approveAnswer", { answerId: t.id, approved: !t.approved })}>
                       {t.approved ? "Hide" : "Show on screen"}
@@ -180,14 +186,14 @@ function Dashboard({ code, pin, view, setView, stale, signOut }: {
       )}
 
       {(event.phase === "round" || event.phase === "poll") && (
-        <section>
-          <span className="label">Tables right now</span>
+        <details className="panel" open={wide}>
+          <summary><h2>Tables right now</h2></summary>
           <RoomGrid tables={view.room} />
-        </section>
+        </details>
       )}
 
       <Guests view={view} busy={busy} act={act} />
-      <Setup key={event.phase + event.round} view={view} busy={busy} act={act} />
+      <Setup key={event.phase + event.round} view={view} busy={busy} act={act} startOpen={wide && event.phase === "lobby"} />
       <Danger busy={busy} act={act} />
     </main>
   );
@@ -197,8 +203,12 @@ type Act = (action: string, body?: Record<string, unknown>) => Promise<boolean>;
 
 function Guests({ view, busy, act }: { view: HostView; busy: boolean; act: Act }) {
   const [name, setName] = useState("");
+  const [find, setFind] = useState("");
+  const [openId, setOpenId] = useState<string | null>(null);
   const open = view.tables.filter((t) => t.open);
   const inRound = view.event.phase === "round";
+  const q = find.trim().toLowerCase();
+  const shown = q ? view.guests.filter((g) => g.name.toLowerCase().includes(q)) : view.guests;
   return (
     <details className="panel" open>
       <summary><h2>Guests ({view.guests.filter((g) => !g.left).length})</h2></summary>
@@ -206,54 +216,67 @@ function Guests({ view, busy, act }: { view: HostView; busy: boolean; act: Act }
         <input aria-label="Add a guest by first name" placeholder="Add a guest by first name" value={name} maxLength={20} onChange={(e) => setName(e.target.value)} />
         <button disabled={busy || !name.trim()}>Add</button>
       </form>
-      <ul className="list">
-        {view.guests.map((g) => (
-          <li key={g.id} className={"row between" + (g.left ? " gone" : "")}>
-            <span>
-              <strong>{g.name}</strong>
-              {g.table != null && !g.left && <span className="sub"> · table {g.table}</span>}
-              {g.pinnedTable != null && <span className="sub"> · kept at table {g.pinnedTable}</span>}
-              {g.left && <span className="sub"> · gone</span>}
-            </span>
-            <span className="row">
-              {!g.left && (
-                <select
-                  aria-label={`Move ${g.name} to a table`}
-                  value=""
-                  disabled={busy}
-                  onChange={(e) => {
-                    const v = e.target.value;
-                    if (v === "unpin") act("unpinGuest", { guestId: g.id });
-                    else if (v.startsWith("keep:")) act("moveGuest", { guestId: g.id, table: Number(v.slice(5)), keep: true });
-                    else if (v) act("moveGuest", { guestId: g.id, table: Number(v) });
-                  }}
-                >
-                  <option value="">Move...</option>
-                  {inRound && open.map((t) => <option key={t.number} value={t.number}>To table {t.number} this round</option>)}
-                  {open.map((t) => <option key={"k" + t.number} value={"keep:" + t.number}>Keep at table {t.number} every round</option>)}
-                  {g.pinnedTable != null && <option value="unpin">Stop keeping at one table</option>}
-                </select>
-              )}
-              <button disabled={busy} onClick={() => act("markLeft", { guestId: g.id, left: !g.left })}>{g.left ? "Bring back" : "Gone"}</button>
-              <button
-                disabled={busy}
-                onClick={() => {
-                  const n = window.prompt?.(`New name for ${g.name}`, g.name);
-                  if (n && n.trim() && n !== g.name) act("renameGuest", { guestId: g.id, name: n });
-                }}
-              >
-                Rename
+      {view.guests.length > 8 && (
+        <input type="search" aria-label="Find a guest" placeholder="Find a guest" value={find} onChange={(e) => setFind(e.target.value)} />
+      )}
+      <p className="fine">Tap a name to move, rename or mark someone as gone.</p>
+      <ul className="list guests">
+        {shown.map((g) => {
+          const isOpen = openId === g.id;
+          return (
+            <li key={g.id} className={g.left ? "gone" : ""}>
+              <button className="guestrow" aria-expanded={isOpen} onClick={() => setOpenId(isOpen ? null : g.id)}>
+                <span>
+                  <strong>{g.name}</strong>
+                  {g.table != null && !g.left && <span className="sub"> · table {g.table}</span>}
+                  {g.pinnedTable != null && <span className="sub"> · kept at table {g.pinnedTable}</span>}
+                  {g.left && <span className="sub"> · gone</span>}
+                </span>
+                <span className="chev" aria-hidden="true">{isOpen ? "−" : "+"}</span>
               </button>
-            </span>
-          </li>
-        ))}
+              {isOpen && (
+                <div className="guestactions">
+                  {!g.left && (
+                    <select
+                      aria-label={`Move ${g.name} to a table`}
+                      value=""
+                      disabled={busy}
+                      onChange={(e) => {
+                        const v = e.target.value;
+                        if (v === "unpin") act("unpinGuest", { guestId: g.id });
+                        else if (v.startsWith("keep:")) act("moveGuest", { guestId: g.id, table: Number(v.slice(5)), keep: true });
+                        else if (v) act("moveGuest", { guestId: g.id, table: Number(v) });
+                      }}
+                    >
+                      <option value="">Move to a table...</option>
+                      {inRound && open.map((t) => <option key={t.number} value={t.number}>To table {t.number} this round</option>)}
+                      {open.map((t) => <option key={"k" + t.number} value={"keep:" + t.number}>Keep at table {t.number} every round</option>)}
+                      {g.pinnedTable != null && <option value="unpin">Stop keeping at one table</option>}
+                    </select>
+                  )}
+                  <button disabled={busy} onClick={() => act("markLeft", { guestId: g.id, left: !g.left })}>{g.left ? "Bring back" : "Mark as gone"}</button>
+                  <button
+                    disabled={busy}
+                    onClick={() => {
+                      const n = window.prompt?.(`New name for ${g.name}`, g.name);
+                      if (n && n.trim() && n !== g.name) act("renameGuest", { guestId: g.id, name: n });
+                    }}
+                  >
+                    Rename
+                  </button>
+                </div>
+              )}
+            </li>
+          );
+        })}
         {view.guests.length === 0 && <li className="sub">Nobody has checked in yet.</li>}
+        {view.guests.length > 0 && shown.length === 0 && <li className="sub">No guest matches that.</li>}
       </ul>
     </details>
   );
 }
 
-function Setup({ view, busy, act }: { view: HostView; busy: boolean; act: Act }) {
+function Setup({ view, busy, act, startOpen }: { view: HostView; busy: boolean; act: Act; startOpen: boolean }) {
   const [tables, setTables] = useState<TableSetup[]>(view.tables);
   const [polls, setPolls] = useState<PollSetup[]>(view.polls.map((p) => ({ question: p.question, options: p.options, allowText: p.allowText })));
   const [name, setName] = useState(view.event.name);
@@ -266,7 +289,7 @@ function Setup({ view, busy, act }: { view: HostView; busy: boolean; act: Act })
   const nextNumber = tables.length ? Math.max(...tables.map((t) => t.number)) + 1 : 1;
 
   return (
-    <details className="panel" open={view.event.phase === "lobby"}>
+    <details className="panel" open={startOpen}>
       <summary><h2>Setup</h2></summary>
       <p className="sub">Change tables, topics, rounds and polls here. Changes to tables apply from the next round.</p>
       <div className="grid3">
@@ -295,7 +318,7 @@ function Setup({ view, busy, act }: { view: HostView; busy: boolean; act: Act })
       <ul className="list">
         {polls.map((p, i) => (
           <li key={i} className="stack tight">
-            <div className="row">
+            <div className="row nowrap">
               <strong>{i + 1}</strong>
               <input aria-label={`Question for poll ${i + 1}`} placeholder="Question" value={p.question} maxLength={200} onChange={(e) => setPoll(i, { question: e.target.value })} />
               <button type="button" onClick={() => setPolls(polls.filter((_, j) => j !== i))}>Remove</button>

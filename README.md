@@ -14,7 +14,7 @@ Live at https://table-mixer.vercel.app (the default event there is a demo).
 | --- | --- | --- |
 | `/` | Guests (phone) | Join with a first name, see your table, topic and table mates, answer polls |
 | `/screen` | Projector | QR code and check-in count, then the live room, poll results, round timer |
-| `/host` | Host (PIN) | Advance rounds, manage guests, moderate typed answers, edit tables, topics, rounds and polls, wipe data |
+| `/host` | Host (PIN) | Advance rounds, manage guests, moderate typed answers, edit tables, topics, rounds and polls, wipe data. Works on a phone: the next-step button stays pinned to the bottom of the screen |
 
 Add `?e=<event code>` to any path to use an event other than the default in `web/.env`.
 
@@ -70,4 +70,4 @@ API_URL=https://<project-ref>.supabase.co/functions/v1/api \
 
 `web/.env` holds only public values (project URL, publishable key, default event code). Never put a service role key or a host PIN in this repo.
 
-The simulation wipes the event it runs against, so only point it at a demo event.
+The simulation wipes the event it runs against, so only point it at a test event, never one people are using.
