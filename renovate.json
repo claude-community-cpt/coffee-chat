@@ -1,6 +1,35 @@
 {
   "$schema": "https://docs.renovatebot.com/renovate-schema.json",
-  "extends": [
-    "config:recommended"
-  ]
+  "extends": ["config:best-practices"],
+  "timezone": "Africa/Johannesburg",
+  "schedule": ["before 6am on monday"],
+  "minimumReleaseAge": "7 days",
+  "internalChecksFilter": "strict",
+  "prHourlyLimit": 2,
+  "packageRules": [
+    {
+      "description": "Routine updates arrive as one weekly pull request and merge by themselves once every check passes. Versions below 1.0 are left out because their minor releases may break things.",
+      "matchUpdateTypes": ["minor", "patch", "digest", "pin", "pinDigest"],
+      "matchCurrentVersion": "!/^0/",
+      "groupName": "routine updates",
+      "automerge": true
+    },
+    {
+      "description": "Major updates wait for a person to review them.",
+      "matchUpdateTypes": ["major"],
+      "automerge": false
+    }
+  ],
+  "lockFileMaintenance": {
+    "enabled": true,
+    "automerge": true,
+    "schedule": ["before 6am on the first day of the month"]
+  },
+  "vulnerabilityAlerts": {
+    "description": "Security fixes skip the weekly schedule and the waiting period, and wait for a person.",
+    "labels": ["security"],
+    "schedule": ["at any time"],
+    "minimumReleaseAge": null,
+    "automerge": false
+  }
 }
