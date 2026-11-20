@@ -10,7 +10,7 @@
     {
       "description": "Routine updates arrive as one weekly pull request and merge by themselves once every check passes. Versions below 1.0 are left out because their minor releases may break things.",
       "matchUpdateTypes": ["minor", "patch", "digest", "pin", "pinDigest"],
-      "matchCurrentVersion": "!/^0/",
+      "matchCurrentVersion": "!/^v?0/",
       "groupName": "routine updates",
       "automerge": true
     },
