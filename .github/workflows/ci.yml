@@ -30,6 +30,10 @@ jobs:
         run: bun run typecheck
       - name: Build
         run: bun run build
+      - name: Build for GitHub Pages (served from /mixer/)
+        run: bun run build:pages
+        env:
+          VITE_BASE: /mixer/
 
   tests:
     name: Seating tests
@@ -38,7 +42,7 @@ jobs:
       - uses: actions/checkout@v7
       - uses: oven-sh/setup-bun@v2
       - name: Run tests
-        run: bun test supabase/functions/api
+        run: bun test supabase/functions/api web/src
 
   backend:
     name: Backend function (lint, type-check)

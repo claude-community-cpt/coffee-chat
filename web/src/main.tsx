@@ -4,9 +4,10 @@ import "./styles.css";
 import { Guest } from "./Guest";
 import { Host } from "./Host";
 import { Screen } from "./Screen";
+import { route } from "./route";
 
-const path = location.pathname.replace(/\/+$/, "");
-const Page = path === "/host" ? Host : path === "/screen" ? Screen : Guest;
+const page = route(location.pathname);
+const Page = page === "host" ? Host : page === "screen" ? Screen : Guest;
 
 createRoot(document.getElementById("root")!).render(
   <React.StrictMode>
