@@ -1,0 +1,57 @@
+name: Deploy to GitHub Pages
+
+# Publishes the front end to GitHub Pages, where it is served from
+# https://claudecapetown.com/<repository name>/ next to the community website.
+#
+# It only runs once this repository is called "mixer", so that the address is
+# claudecapetown.com/mixer. Until then it is skipped and the Vercel deployment
+# is the only live copy. README.md ("Moving to claudecapetown.com/mixer") has
+# the steps.
+
+on:
+  push:
+    branches: [main]
+    paths: ["web/**", ".github/workflows/pages.yml"]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: pages
+  cancel-in-progress: false
+
+jobs:
+  build:
+    name: Build
+    if: github.event.repository.name == 'mixer'
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: web
+    steps:
+      - uses: actions/checkout@v7
+      - uses: oven-sh/setup-bun@v2
+      - name: Install dependencies
+        run: bun install --frozen-lockfile
+      - name: Build for /${{ github.event.repository.name }}/
+        run: bun run build:pages
+        env:
+          VITE_BASE: /${{ github.event.repository.name }}/
+      - uses: actions/upload-pages-artifact@v5
+        with:
+          path: web/dist
+
+  deploy:
+    name: Deploy
+    needs: build
+    runs-on: ubuntu-latest
+    permissions:
+      pages: write
+      id-token: write
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - id: deployment
+        uses: actions/deploy-pages@v5

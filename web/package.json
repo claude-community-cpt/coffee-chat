@@ -6,6 +6,7 @@
   "scripts": {
     "dev": "vite",
     "build": "tsc --noEmit && vite build",
+    "build:pages": "tsc --noEmit && vite build && bun scripts/pages-routes.ts",
     "preview": "vite preview",
     "lint": "biome lint",
     "typecheck": "tsc --noEmit"
