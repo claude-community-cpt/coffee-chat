@@ -1,5 +1,6 @@
 import { useMemo, useState } from "react";
 import { api, ApiError, eventCode, type EventInfo } from "./api";
+import { BASE } from "./route";
 import { clock, useCountdown, useLive } from "./useLive";
 import { joinUrl, PollBars, RoomGrid, type RoomTable } from "./Screen";
 import { Brand } from "./Brand";
@@ -124,7 +125,7 @@ function Dashboard({ code, pin, view, setView, stale, signOut }: {
         <div>
           <Brand />
           <h1>{event.name}</h1>
-          <p className="sub">Host page · guests join at {joinUrl(code).replace(/^https?:\/\//, "")} · <a href={`/screen${location.search}`} target="_blank" rel="noreferrer">open the big screen</a></p>
+          <p className="sub">Host page · guests join at {joinUrl(code).replace(/^https?:\/\//, "")} · <a href={`${BASE}screen${location.search}`} target="_blank" rel="noreferrer">open the big screen</a></p>
         </div>
         <button type="button" onClick={signOut}>Sign out</button>
       </header>

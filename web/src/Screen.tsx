@@ -1,6 +1,7 @@
 import { useEffect, useMemo, useState } from "react";
 import QRCode from "qrcode";
 import { api, eventCode, tableColor, type EventInfo } from "./api";
+import { BASE } from "./route";
 import { clock, useCountdown, useLive } from "./useLive";
 import { Brand } from "./Brand";
 
@@ -15,7 +16,7 @@ type RoomView = {
 
 export function joinUrl(code: string) {
   const def = (import.meta.env.VITE_EVENT_CODE as string) || "demo";
-  return location.origin + "/" + (code === def ? "" : `?e=${encodeURIComponent(code)}`);
+  return location.origin + BASE + (code === def ? "" : `?e=${encodeURIComponent(code)}`);
 }
 
 export function Qr({ url, size = 320 }: { url: string; size?: number }) {

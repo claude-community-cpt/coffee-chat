@@ -48,6 +48,35 @@ Differences from the site:
 - **Front end**: the Vercel project `table-mixer` is linked to this repo with root directory `web`. Merging to `main` updates the live site, and every pull request gets its own preview link.
 - **Backend**: the schema and the `api` function are applied to the Supabase project by hand (or through the Supabase connector). Merging does not deploy them, so apply any change under `supabase/` separately.
 
+### Moving to claudecapetown.com/mixer
+
+The app can also be served by GitHub Pages at `claudecapetown.com/mixer`, next
+to the community website, with no DNS change. GitHub serves every repository in
+the organisation under the organisation site's domain, at a path equal to the
+repository's name. The app is built to run from any folder (`VITE_BASE`), and
+`.github/workflows/pages.yml` deploys it, but only once this repository is
+called `mixer`. An organisation owner does these steps, in order:
+
+1. Rename the website repository `claude-cape-town-community-site` to
+   `claude-community-cpt.github.io`. That makes it the organisation's main
+   site, which is what lets other repositories appear under its domain. Check
+   that claudecapetown.com still loads and that its Pages settings still show
+   the custom domain.
+2. In the website repository, remove the `/mixer` redirect from
+   `astro.config.mjs` so the two do not collide.
+3. Rename this repository to `mixer`.
+4. In this repository: Settings, Pages, set Source to "GitHub Actions".
+5. Run the "Deploy to GitHub Pages" workflow (Actions tab, Run workflow).
+6. Open `claudecapetown.com/mixer/`, `/mixer/screen/` and `/mixer/host/` and
+   run through an event with the test event code.
+
+The Vercel deployment keeps working through all of this (Vercel follows the
+rename), so it stays as the fallback. The backend does not change: both copies
+talk to the same Supabase project.
+
+Addresses on Pages end in a slash (`/mixer/host/`). The QR code on the big
+screen always points at wherever the screen itself was opened.
+
 ## Privacy
 
 First name only, at most 20 characters. Typed poll answers only reach the big screen after the host approves them. "Wipe guest data" on the host page deletes all names, seats and answers, and should be run within two days of an event.
